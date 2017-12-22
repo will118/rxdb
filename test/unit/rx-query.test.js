@@ -9,6 +9,7 @@ import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from './../helper/schemas';
 import * as util from '../../dist/lib/util';
+import * as QueryChangeDetector from '../../dist/lib/query-change-detector';
 
 describe('rx-query.test.js', () => {
     describe('mquery', () => {
@@ -720,11 +721,11 @@ describe('rx-query.test.js', () => {
             c.database.destroy();
         });
         it('#393 Deleting all items with a sorted subscribe throws error', async () => {
+            console.log('---------------------');
             // TODO it seams like this fails randomly
             // further investigation needed
-            return;
+            //            return;
 
-            // QueryChangeDetector.enable();
             const schema = {
                 primaryPath: '_id',
                 disableKeyCompression: true,
@@ -851,7 +852,7 @@ describe('rx-query.test.js', () => {
             };
 
             await Promise.all(
-                new Array(10)
+                new Array(100)
                 .fill(0)
                 .map(() => generateDocData())
                 .map(data => col.insert(data))
@@ -859,11 +860,11 @@ describe('rx-query.test.js', () => {
 
             const emitted = [];
             const sub = col2.find()
-                .limit(8)
                 .where('bucket').eq('foobar')
                 .sort({
                     updatedAt: 'desc'
                 })
+                .limit(8)
                 .$.subscribe(res => {
                     //        console.log('emitted:');
                     //        console.dir(JSON.stringify(res));
@@ -871,12 +872,19 @@ describe('rx-query.test.js', () => {
                 });
 
             await destroyAll(col);
+            console.log(':1');
 
             // w8 until empty array on other tab
             await AsyncTestUtil.waitUntil(() => {
+                console.log(emitted.length);
+                console.log(':1.5');
+
                 const last = emitted[emitted.length - 1];
                 return last && last.length === 0;
             });
+            console.log(':2');
+
+            process.exit();
 
             sub.unsubscribe();
             db.destroy();

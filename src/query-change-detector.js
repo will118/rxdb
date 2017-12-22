@@ -27,6 +27,7 @@ class QueryChangeDetector {
      * @return {boolean|Object[]} true if mustReExec, false if no change, array if calculated new results
      */
     runChangeDetection(changeEvents) {
+        console.log('runChangeDetection');
         if (changeEvents.length === 0) return false;
         if (!ENABLED) return true;
 
@@ -190,6 +191,7 @@ class QueryChangeDetector {
      * @return {boolean}
      */
     doesDocMatchQuery(docData) {
+        console.log('doesDocMatchQuery');
         docData = this.query.collection.schema.swapPrimaryToId(docData);
         const inMemoryFields = Object.keys(this.query.toJSON().selector);
         const retDocs = filterInMemoryFields(
@@ -246,6 +248,7 @@ class QueryChangeDetector {
      * @return {boolean} true if before, false if after
      */
     _isSortedBefore(docDataLeft, docDataRight) {
+        console.log('_isSortedBefore');
         const options = this.query.toJSON();
         const inMemoryFields = Object.keys(this.query.toJSON().selector);
         const swappedLeft = this.query.collection.schema.swapPrimaryToId(docDataLeft);
@@ -275,6 +278,7 @@ class QueryChangeDetector {
      * @return {object[]}
      */
     _resortDocData(resultsData) {
+        console.log('_resortDocData');
         const rows = resultsData.map(doc => {
             return {
                 doc: this.query.collection.schema.swapPrimaryToId(doc)
