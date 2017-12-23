@@ -37,7 +37,6 @@ describe('pouch-db-integration.test.js', () => {
             db.destroy();
         });
     });
-
     describe('pouchdb-adapter-memory', () => {
         it('should not create a db without adding the adapter', async () => {
             await AsyncTestUtil.assertThrows(
@@ -252,7 +251,6 @@ describe('pouch-db-integration.test.js', () => {
             });
         });
     });
-
     describe('BUGS: pouchdb', () => {
         it('_local documents should not be cached by pouchdb', async () => {
             const name = util.randomCouchString(10);
@@ -283,6 +281,76 @@ describe('pouch-db-integration.test.js', () => {
 
             pouch1.destroy();
             pouch2.destroy();
+        });
+        it('many inserts and removes should not create errors', async () => {
+            const name = util.randomCouchString(10);
+            const storage = {
+                adapter: 'memory'
+            };
+            const createPouchInstance = async () => {
+                const pouch = new RxDB.PouchDB(name, storage);
+                await pouch.createIndex({
+                    index: {
+                        fields: ['updatedAt']
+                    }
+                });
+                return pouch;
+            };
+
+            const pouch1 = await createPouchInstance();
+            const pouch2 = await createPouchInstance();
+
+            const generateDocData = () => {
+                return {
+                    _id: AsyncTestUtil.randomString(10),
+                    bucket: 'foobar',
+                    updatedAt: '2002-10-02T10:00:00-05:00'
+                };
+            };
+
+            // generate some docs
+            await Promise.all(
+                new Array(100)
+                .fill(0)
+                .map(() => generateDocData())
+                .map(data => pouch1.put(data))
+            );
+
+            const allDocsResult = await pouch1.find({
+                selector: {}
+            });
+            const allDocs = allDocsResult.docs;
+
+            const getResult = async () => {
+                console.log('get result');
+                const docsResult = await pouch2.find({
+                    selector: {
+                        bucket: {
+                            $eq: 'foobar'
+                        },
+                        updatedAt: {
+                            $gt: null
+                        }
+                    },
+                    sort: ['updatedAt'],
+                    limit: 8
+                });
+                const docs = docsResult.docs;
+                console.log(docs.length);
+            };
+
+            await getResult();
+            await Promise.all([
+                allDocs.map(async (doc) => {
+                    console.log('remove one');
+                    await getResult();
+                    await pouch1.remove(doc);
+                })
+            ]);
+
+            await AsyncTestUtil.wait(500);
+
+            process.exit();
         });
     });
 });

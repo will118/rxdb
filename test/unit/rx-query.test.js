@@ -9,7 +9,6 @@ import * as humansCollection from './../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from './../helper/schemas';
 import * as util from '../../dist/lib/util';
-import * as QueryChangeDetector from '../../dist/lib/query-change-detector';
 
 describe('rx-query.test.js', () => {
     describe('mquery', () => {
