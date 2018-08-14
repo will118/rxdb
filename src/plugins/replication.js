@@ -81,6 +81,12 @@ export class RxReplicationState {
             .subscribe(ev => this._subjects.error.next(ev))
         );
 
+        // requestError
+        this._subs.push(
+            fromEvent(evEmitter, 'requestError')
+            .subscribe(ev => this._subjects.error.next(ev))
+        );
+
         // active
         this._subs.push(
             fromEvent(evEmitter, 'active')
